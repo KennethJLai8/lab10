@@ -30,191 +30,55 @@ enum pauseButtonSM_States{pauseButton_wait, pauseButton_press, pauseButton_relea
 enum toggleLED0_States{toggleLED0_wait, toggleLED0_blink};
 enum toggleLED1_States{toggleLED1_wait, toggleLED1_blink};
 enum display_States {display_display};
-//enum IsItPressedStates{Start, Wait, Press};
-enum LockStates {Start, ZeroPrePress, ZeroRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock}      
+enum IsItPressedStates{Start, Wait, Press};
 
-int LockSM(int state)
+int IsItPressedSM(int state)
 {
+	switch(state)
+	{
+		case Start:
+			state = Wait;
+			break;
 
-switch(state)
-{
-    case Start:
-        state = ZeroPrePress;
-        break;
-        
-    case ZeroPrePress:
-        PORTB = PORTB & 0xFE;
-        if(y != '#')
-        {
-            
-            state = ZeroPrePress;
-            break;
-            
-        }
-        else if(y == '#')
-        {
-            state = ZeroRelease;
-            break;
-        }
-        
-    case ZeroRelease:
-        if(y == '#')
-        {
-            state = ZeroRelease;
-            break;
-        }
-        else
-        {
-            state = OnePrePress;
-            break;
-        }
-        
-    case OnePrePress:
-        if(y != '1')
-        {
-            state = OnePrePress;
-            break;
-            
-        }
-        else if(y == '1')
-        {
-            state = OneRelease;
-            break;
-        }
-        
-    case OneRelease:
-        if(y == '1')
-        {
-            state = OneRelease;
-            break;
-        }
-        else
-        {
-            state = TwoPrePress;
-            break;
-        }
-        
-    case OnePrePress:
-        if(y != '2')
-        {
-            state = TwoPrePress;
-            break;
-            
-        }
-        else if(y == '2')
-        {
-            state = TwoRelease;
-            break;
-        }
-        
-    case TwoRelease:
-        if(y == '2')
-        {
-            state = TwoRelease;
-            break;
-        }
-        else
-        {
-            state = ThreePrePress;
-            break;
-        }
-        
-    case ThreePrePress:
-        if(y != '3')
-        {
-            state = ThreePrePress;
-            break;
-            
-        }
-        else if(y == '3')
-        {
-            state = ThreeRelease;
-            break;
-        }
-        
-    case ThreeRelease:
-        if(y == '3')
-        {
-            state = ThreeRelease;
-            break;
-        }
-        else
-        {
-            state = FourPrePress;
-            break;
-        }
-        
-    case FourPrePress:
-        if(y != '4')
-        {
-            state = FourPrePress;
-            break;
-            
-        }
-        else if(y == '4')
-        {
-            state = FourRelease;
-            break;
-        }
-        
-    case FourRelease:
-        if(y == '4')
-        {
-            state = FourRelease;
-            break;
-        }
-        else
-        {
-            state = FivePrePress;
-            break;
-        }
-        
-    case FivePrePress:
-        if(y != '5')
-        {
-            state = FivePrePress;
-            break;
-            
-        }
-        else if(y == '5')
-        {
-            state = FiveRelease;
-            break;
-        }
-        
-    case FiveRelease:
-        if(y == '5')
-        {
-            state = FiveRelease;
-            break;
-        }
-        else
-        {
-            state = Unlock;
-            break;
-        }
-        
-    case Unlock:
-        PORTB = PORTB | 0xFE;
-        
-        if(~PINB == 0x01)
-        {
-            PORTB = 0x00;
-            state = ZeroPrePress;
-        break;
-        }
-        else
-        {
-            state = Unlock
-            break;
-        }
-        
-        
-        
+		case Wait:
+			if(y != '\0')
+			{
+				
+			
+				state = Wait;
+				break;
+			}
+			else
+			{
+			//PORTB = PORTB - 0x80;
+			state = Press;
+			break;
+			}
+		case Press:
+			if(y != '\0')
+			{
+				PORTB = PORTB + 0x80;
+				//state = Press;
+				//break;
+			}
+			//else if(y == '\0')
+			//{
+			//	PORTB = PORTB + 0x80;
+			//	state = Wait;
+			//	break;
+			//}
+			/*	state = Press;
+				break;
+			}	
+			else
+			{
+				PORTB = PORTB - 0x80;
+				state = Wait;
+				break;
+			}*/
+	}
+	return state;
 }
-}
-
-
 
 int displaySMTick(int state)
 {
