@@ -20,7 +20,7 @@
 
 
 
-unsigned char x, y;
+unsigned char x;
 unsigned char led0_output = 0x00;
 unsigned char led1_output = 0x00;
 unsigned char pause = 0;
@@ -32,7 +32,7 @@ enum toggleLED1_States{toggleLED1_wait, toggleLED1_blink};
 enum display_States {display_display};
 enum IsItPressedStates{Start, Wait, Press};
 
-int IsItPressedSM(int state)
+int IsItPressedSM(unsigned char x, int state)
 {
 	switch(state)
 	{
@@ -41,41 +41,22 @@ int IsItPressedSM(int state)
 			break;
 
 		case Wait:
-			if(y != '\0')
+			if(x != '\0')
 			{
-				
-			
 				state = Wait;
 				break;
 			}
 			else
 			{
-			//PORTB = PORTB - 0x80;
 			state = Press;
 			break;
 			}
 		case Press:
-			if(y != '\0')
+			if(x != '\0')
 			{
 				PORTB = PORTB + 0x80;
-				//state = Press;
 				//break;
-			}
-			//else if(y == '\0')
-			//{
-			//	PORTB = PORTB + 0x80;
-			//	state = Wait;
-			//	break;
-			//}
-			/*	state = Press;
-				break;
 			}	
-			else
-			{
-				PORTB = PORTB - 0x80;
-				state = Wait;
-				break;
-			}*/
 	}
 	return state;
 }
@@ -191,7 +172,7 @@ int main(void)
     
     const char start = -1;
     
-    task1.state = Start;
+    task1.state = start;
     task1.period = 100;
     task1.elapsedTime = task1.period;
     task1.TickFct = &IsItPressedSM;
@@ -208,7 +189,6 @@ int main(void)
     while(1)
     {
         x = GetKeypadKey();
-	y = x;
         switch(x)
         {
             case '\0': PORTB = 0x1F; break;
