@@ -27,6 +27,34 @@ enum pauseButtonSM_States{pauseButton_wait, pauseButton_press, pauseButton_relea
 enum toggleLED0_States{toggleLED0_wait, toggleLED0_blink};
 enum toggleLED1_States{toggleLED1_wait, toggleLED1_blink};
 enum display_States {display_display};
+enum IsItPressedStates{Start, Wait, Press}IsItPressedState;
+
+void IsItPressedSM(unsigned char x)
+{
+	switch(IsItPressedState)
+	{
+		case Start:
+			IsItPressedState = Wait;
+			break;
+
+		case Wait:
+			if(x != '\0')
+			{
+				IsItPressedState = Wait;
+				break;
+			}
+			else
+			{
+			IsItPressedState = Press;
+			break;
+			}
+		case Press:
+			if(x != '\0')
+			{
+				PORTB = PORTB + 0x80;
+			}	
+	}
+}
 
 int displaySMTick(int state)
 {
@@ -149,5 +177,8 @@ int main(void)
 
 
         }
+
+	IsItPressedSM(x);
+
     }
 }
