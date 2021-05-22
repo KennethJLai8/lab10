@@ -31,7 +31,7 @@ enum toggleLED0_States{toggleLED0_wait, toggleLED0_blink};
 enum toggleLED1_States{toggleLED1_wait, toggleLED1_blink};
 enum display_States {display_display};
 //enum IsItPressedStates{Start, Wait, Press};
-enum LockStates {Start, ZeroPrePress, ZeroRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock};      
+enum LockStates {Start, PoundPrePress, PoundRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock};      
 
 int LockSM(int state)
 {
@@ -39,29 +39,35 @@ int LockSM(int state)
 switch(state)
 {
     case Start:
-        state = ZeroPrePress;
+        state = PoundPrePress;
         break;
         
-    case ZeroPrePress:
+    case PoundPrePress:
         PORTB = 0x00;
-        if(y != '#')
+	
+	if(y == '\0')
+	{
+		state = PoundPrePress;
+		break;
+	}
+	else if(y != '#')
         {
             
-            state = ZeroPrePress;
+            state = PoundPrePress;
             break;
             
         }
         else if(y == '#')
         {
 		//PORTB = 0x01;debug
-            state = ZeroRelease;
+            state = PoundRelease;
             break;
         }
         
-    case ZeroRelease:
+    case PoundRelease:
         if(y == '#')
         {
-            state = ZeroRelease;
+            state = PoundRelease;
             break;
         }
         else
@@ -71,9 +77,14 @@ switch(state)
         }
         
     case OnePrePress:
-        if(y != '1')
+	if(y == '\0')
+	{
+		state = OnePrePress;
+		break;
+	}
+	else if(y != '1')
         {
-            state = OnePrePress;
+            state = PoundPrePress;
             break;
             
         }
@@ -97,9 +108,14 @@ switch(state)
         }
         
     case TwoPrePress:
-        if(y != '2')
+	if(y == '\0')
+	{
+		state = TwoPrePress;
+		break;
+	}
+	else if(y != '2')
         {
-            state = TwoPrePress;
+            state = PoundPrePress;
             break;
             
         }
@@ -123,9 +139,15 @@ switch(state)
         }
         
     case ThreePrePress:
-        if(y != '3')
+
+	if(y == '\0')
+	{
+		state = ThreePrePress;
+		break;
+	}
+	else if(y != '3')
         {
-            state = ThreePrePress;
+            state = PoundPrePress;
             break;
             
         }
@@ -149,10 +171,16 @@ switch(state)
         }
         
     case FourPrePress:
-        if(y != '4')
+	if(y == '\0')
+	{
+		state = FourPrePress;
+		break;
+
+	}
+	else if(y != '4')
         {
 		//PORTB = 0x01; success
-            state = FourPrePress;
+            state = PoundPrePress;
             break;
             
         }
@@ -166,7 +194,7 @@ switch(state)
     case FourRelease:
         if(y == '4')
         {
-	//	PORTB = 0x01;
+		//PORTB = 0x01;
 
             state = FourRelease;
             break;
@@ -178,9 +206,14 @@ switch(state)
         }
         
     case FivePrePress:
+	if(y == '\0')
+	{
+		state = FivePrePress;
+		break;
+	}
         if(y != '5')
         {
-            state = FivePrePress;
+            state = PoundPrePress;
             break;
             
         }
@@ -205,10 +238,10 @@ switch(state)
     case Unlock:
         PORTB = 0x01;
         
-        if(~PINB == 0x80)
+        if((~PINB & 0x80) == 0x80)
         {
             PORTB = 0x00;
-            state = ZeroPrePress;
+            state = PoundPrePress;
         break;
         }
         else
@@ -374,8 +407,6 @@ int main(void)
             case '0': PORTB = 0x00; break;
             case '#': PORTB = 0x0F; break;
             default: PORTB = 0x1B; break;
-
-
         }*/
 
 	for(i = 0; i < numTasks; i++)
