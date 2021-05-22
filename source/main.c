@@ -31,7 +31,7 @@ enum toggleLED0_States{toggleLED0_wait, toggleLED0_blink};
 enum toggleLED1_States{toggleLED1_wait, toggleLED1_blink};
 enum display_States {display_display};
 //enum IsItPressedStates{Start, Wait, Press};
-enum LockStates {Start, ZeroPrePress, ZeroRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock}      
+enum LockStates {Start, ZeroPrePress, ZeroRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock};      
 
 int LockSM(int state)
 {
@@ -43,7 +43,7 @@ switch(state)
         break;
         
     case ZeroPrePress:
-        PORTB = PORTB & 0xFE;
+        PORTB = 0x00;
         if(y != '#')
         {
             
@@ -53,6 +53,7 @@ switch(state)
         }
         else if(y == '#')
         {
+		//PORTB = 0x01;debug
             state = ZeroRelease;
             break;
         }
@@ -85,6 +86,7 @@ switch(state)
     case OneRelease:
         if(y == '1')
         {
+		//PORTB = 0x01;
             state = OneRelease;
             break;
         }
@@ -94,7 +96,7 @@ switch(state)
             break;
         }
         
-    case OnePrePress:
+    case TwoPrePress:
         if(y != '2')
         {
             state = TwoPrePress;
@@ -110,6 +112,7 @@ switch(state)
     case TwoRelease:
         if(y == '2')
         {
+		//PORTB = 0x01;
             state = TwoRelease;
             break;
         }
@@ -135,6 +138,7 @@ switch(state)
     case ThreeRelease:
         if(y == '3')
         {
+		//PORTB = 0x01;
             state = ThreeRelease;
             break;
         }
@@ -147,12 +151,14 @@ switch(state)
     case FourPrePress:
         if(y != '4')
         {
+		//PORTB = 0x01; success
             state = FourPrePress;
             break;
             
         }
         else if(y == '4')
         {
+		//PORTB == 0x01;
             state = FourRelease;
             break;
         }
@@ -160,6 +166,8 @@ switch(state)
     case FourRelease:
         if(y == '4')
         {
+	//	PORTB = 0x01;
+
             state = FourRelease;
             break;
         }
@@ -195,9 +203,9 @@ switch(state)
         }
         
     case Unlock:
-        PORTB = PORTB | 0xFE;
+        PORTB = 0x01;
         
-        if(~PINB == 0x01)
+        if(~PINB == 0x80)
         {
             PORTB = 0x00;
             state = ZeroPrePress;
@@ -205,7 +213,7 @@ switch(state)
         }
         else
         {
-            state = Unlock
+            state = Unlock;
             break;
         }
         
@@ -318,7 +326,7 @@ int main(void)
 {
 
     unsigned char pause = 0;
-    DDRB = 0xFF; PORTB = 0x00;
+    DDRB = 0x7B; PORTB = 0x80;
     DDRC = 0xF0; PORTC = 0x0F;
     
     static task task1, task2, task3, task4;
@@ -330,7 +338,7 @@ int main(void)
     task1.state = Start;
     task1.period = 100;
     task1.elapsedTime = task1.period;
-    task1.TickFct = &IsItPressedSM;
+    task1.TickFct = &LockSM;
     
    
     
@@ -345,6 +353,7 @@ int main(void)
     {
         x = GetKeypadKey();
 	y = x;
+	/*
         switch(x)
         {
             case '\0': PORTB = 0x1F; break;
@@ -367,7 +376,7 @@ int main(void)
             default: PORTB = 0x1B; break;
 
 
-        }
+        }*/
 
 	for(i = 0; i < numTasks; i++)
         {
