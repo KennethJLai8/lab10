@@ -1,7 +1,7 @@
 /*	Author: klai022
  *  Partner(s) Name: 
  *	Lab Section: 023
- *	Assignment: Lab 10  Exercise 3
+ *	Assignment: Lab 10  Exercise 2
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -20,93 +20,10 @@
 
 
 
-
-
-
-
-
-
-
-void ADC_init()
-
-{
-
-    ADCSRA |= (1 << ADEN) | (1 << ADSC) | (1 << ADATE);
-
-}
-
-
-void set_PWM(double frequency) { //call this to set frequency of speaker
-
-    static double current_frequency;
-
-
-    if (frequency != current_frequency) {
-
-        if(!frequency)
-
-            TCCR3B &= 0x08;
-
-        else
-
-            TCCR3B |= 0x03;
-
-
-        if(frequency < 0.954)
-
-            OCR3A = 0xFFFF;
-
-        else if (frequency > 31250)
-
-            OCR3A = 0x0000;
-
-        else
-
-            OCR3A = (short) (8000000 / (128 * frequency)) - 1;
-
-        
-
-        TCNT3 = 0;
-
-        current_frequency = frequency;
-
-    }
-
-}
-
-
-void PWM_on() {//enables PWM
-
-    TCCR3A = (1 << COM3A0);
-
-    TCCR3B = (1 << WGM32) | (1 << CS31) | (1 << CS30);
-
-    set_PWM(0);
-
-}
-
-
-void PWM_off() {
-
-    TCCR3A = 0x00;
-
-    TCCR3B = 0x00;
-
-}
-
-
-
-
-
 unsigned char x, y;
 unsigned char led0_output = 0x00;
 unsigned char led1_output = 0x00;
 unsigned char pause = 0;
-
-enum DoorBellStates{DoorBellStart, DoorBellWait, Note1, Note2, Note3, WaitLow};
-double array[3] = {349.23, 329.63, 261.63};
-unsigned char i = 0;
-unsigned char j = 0;
 
 
 enum pauseButtonSM_States{pauseButton_wait, pauseButton_press, pauseButton_release};
@@ -114,105 +31,14 @@ enum toggleLED0_States{toggleLED0_wait, toggleLED0_blink};
 enum toggleLED1_States{toggleLED1_wait, toggleLED1_blink};
 enum display_States {display_display};
 //enum IsItPressedStates{Start, Wait, Press};
-enum LockStates {LockStart, PoundPrePress, PoundRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock};      
-
-
-
-int DoorbellSM(int state)
-{
-    switch(state)
-    {
-        case DoorBellStart:
-            state = DoorBellWait;
-            break;
-            
-        case DoorBellWait:
-            if((~PINA & 0x80) == 0x80)
-            {
-                state = Note1;
-                break;
-            }
-            else
-            {
-                state = DoorBellWait;
-                break;
-            }
-            
-        case Note1:
-            if(i < 5)
-            {
-                set_PWM(array[j]);
-                i++;
-                break;
-            }
-            else
-            {
-                i = 0;
-                j++;
-                state = Note2;
-                break;
-            }
-            
-        case Note2:
-            if(i < 5)
-            {
-                set_PWM(array[j]);
-                i++;
-                break;
-            }
-            else
-            {
-                i = 0;
-                j++;
-                state = Note3;
-                break;
-            }
-            
-            
-        case Note3:
-            if(i < 5)
-            {
-                set_PWM(array[j]);
-                i++;
-                break;
-            }
-            else
-            {
-                i = 0;
-                j = 0;
-		set_PWM(0.00);
-                state = WaitLow;
-                break;
-            }
-
-	case WaitLow:
-	    if((~PINB & 0x80) == 0x80)
-	    {
-		    state = WaitLow;
-	    }
-	    else
-	    {
-		    state = DoorBellWait;
-	    }
-            
-           
-            
-            
-        
-    }
-    return state;
-
-}
-
-
-
+enum LockStates {Start, PoundPrePress, PoundRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock};      
 
 int LockSM(int state)
 {
 
 switch(state)
 {
-    case LockStart:
+    case Start:
         state = PoundPrePress;
         break;
         
@@ -233,7 +59,7 @@ switch(state)
         }
         else if(y == '#')
         {
-		//PORTB = 0x01;//debug
+		//PORTB = 0x01;debug
             state = PoundRelease;
             break;
         }
@@ -427,6 +253,7 @@ switch(state)
         
         
 }
+
 return state;
 }
 
@@ -534,31 +361,24 @@ int main(void)
 {
 
     unsigned char pause = 0;
-    DDRA = 0x00; PORTA = 0xFF;
     DDRB = 0x7B; PORTB = 0x80;
     DDRC = 0xF0; PORTC = 0x0F;
     
     static task task1, task2, task3, task4;
-    task *tasks[] = {&task1, &task2};
+    task *tasks[] = {&task1};
     const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
     
     const char start = -1;
     
-    task1.state = DoorBellStart;
-    task1.period = 200;
+    task1.state = Start;
+    task1.period = 100;
     task1.elapsedTime = task1.period;
-    task1.TickFct = &DoorbellSM;
-
-    task2.state = LockStart;
-    task2.period = 100;
-    task2.elapsedTime = task2.period;
-    task2.TickFct = &LockSM;
+    task1.TickFct = &LockSM;
     
    
     
     TimerSet(100);/*GCD*/
     TimerOn();
-    PWM_on();
     
     unsigned short i;
     
