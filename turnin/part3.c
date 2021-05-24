@@ -108,6 +108,8 @@ double array[3] = {349.23, 329.63, 261.63};
 unsigned char i = 0;
 unsigned char j = 0;
 
+enum KeypadStates{KeyStart, KeyPress};
+
 
 enum pauseButtonSM_States{pauseButton_wait, pauseButton_press, pauseButton_release};
 enum toggleLED0_States{toggleLED0_wait, toggleLED0_blink};
@@ -115,6 +117,60 @@ enum toggleLED1_States{toggleLED1_wait, toggleLED1_blink};
 enum display_States {display_display};
 //enum IsItPressedStates{Start, Wait, Press};
 enum LockStates {LockStart, PoundPrePress, PoundRelease, OnePrePress, OneRelease, TwoPrePress, TwoRelease, ThreePrePress, ThreeRelease, FourPrePress, FourRelease, FivePrePress, FiveRelease, Unlock};      
+
+
+
+
+
+int KeypadSM(int state)
+{
+     
+    switch(state)
+    {
+        case KeyStart:
+            state = KeyPress;
+            break;
+        
+        case KeyPress:
+	    x = GetKeypadKey();
+            y = x;
+        
+            
+	/*
+        switch(x)
+        {
+            case '\0': PORTB = 0x1F; break;
+            case '1': PORTB = 0x01; break;
+            case '2': PORTB = 0x02; break;
+            case '3': PORTB = 0x03; break;
+            case '4': PORTB = 0x04; break;
+            case '5': PORTB = 0x05; break;
+            case '6': PORTB = 0x06; break;
+            case '7': PORTB = 0x07; break;
+            case '8': PORTB = 0x08; break;
+            case '9': PORTB = 0x09; break;
+            case 'A': PORTB = 0x0A; break;
+            case 'B': PORTB = 0x0B; break;
+            case 'C': PORTB = 0x0C; break;
+            case 'D': PORTB = 0x0D; break;
+            case '*': PORTB = 0x0E; break;
+            case '0': PORTB = 0x00; break;
+            case '#': PORTB = 0x0F; break;
+            default: PORTB = 0x1B; break;
+	    
+        }
+            */
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -539,20 +595,27 @@ int main(void)
     DDRC = 0xF0; PORTC = 0x0F;
     
     static task task1, task2, task3, task4;
-    task *tasks[] = {&task1, &task2};
+    task *tasks[] = {&task1, &task2, &task3};
     const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
     
     const char start = -1;
-    
-    task1.state = DoorBellStart;
-    task1.period = 200;
-    task1.elapsedTime = task1.period;
-    task1.TickFct = &DoorbellSM;
 
-    task2.state = LockStart;
-    task2.period = 100;
+    task1.state = KeyStart;
+    task1.period = 100;
+    task1.elapsedTime = task1.period;
+    task1.TickFct = &KeypadSM;
+
+
+    
+    task2.state = DoorBellStart;
+    task2.period = 200;
     task2.elapsedTime = task2.period;
-    task2.TickFct = &LockSM;
+    task2.TickFct = &DoorbellSM;
+
+    task3.state = LockStart;
+    task3.period = 100;
+    task3.elapsedTime = task3.period;
+    task3.TickFct = &LockSM;
     
    
     
